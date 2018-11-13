@@ -1,2 +1,2 @@
 # eth_log_cache
-cache ethereum logs entries in NoSQL database (GCP, later AWS)
+Cache ethereum logs entries in NoSQL database (GCP, later AWS)
