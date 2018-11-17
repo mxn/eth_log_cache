@@ -19,8 +19,7 @@ const request = require('request')
 const SolidityCoder = require("web3/lib/solidity/coder.js");
 const SolidityEvent = require("web3/lib/web3/event.js");
 const eventLogParser = require('ethereum-event-logs')
-
-
+const assert = require('assert')
 
 const testPayload = 
 '{"jsonrpc":"2.0","id":11,"method":"eth_getLogs","params":[{"topics":["0x3ec66ca66f5513d42ece39babf6ab6a9177e30527051b76a3b5dc98e36952471","0x000000000000000000000000d0a1e359811322d97991e03f863a0c30c2cf029c","0x000000000000000000000000c4375b7de8af5a38a93548eb8453a498222c4ff2"],"address":"0x7a2637f799e183e276cc077c300bbff6f78df075","fromBlock":"0x0","toBlock":"latest"}]}'
@@ -34,12 +33,13 @@ const router = express.Router();
 /**
  * Retrieve a page of events (up to ten at a time).
  */
-router.get('/', (req, res, next) => {
-  var fromBlock = 0;
-  if (req.query && req.query.fromBlock) {
-    fromBlock =  req.query.fromBlock
-  } 
-  getParsedEthLog().then((d) => res.json(d))
+// ""/:network/:contract/:eventType/events?
+router.get('/:network/:contract/:eventType/events', (req, res, next) => {
+  assert.ok(req.params.contract === 'OptionFactory', "Only  OptionFactory is supported!")
+  assert.ok(req.params.eventType == 'OptionTokenCreated')
+  console.log("req.params",req.params)
+  var fromBlock = req.query.id || 0;
+  getParsedEthLog(req.params.eventType).then((d) => res.json(d))
 });
 
 const getEthLogJson =  async () => {
@@ -57,11 +57,11 @@ const getEthLogJson =  async () => {
   return res.body
 }
 
-const getParsedEthLog =  async () => {
+const getParsedEthLog =  async (eventType) => {
   let jsonResponse = JSON.parse(await getEthLogJson())
   let jsonLogArr = jsonResponse.result
   let abi = getOptionFactoryAbi()
-  let abiEvents = abi.filter((el) => el.type === 'event' && el.name === 'OptionTokenCreated')
+  let abiEvents = abi.filter((el) => el.type === 'event' && el.name === eventType)
   let parsedLogEvents = eventLogParser.parseLog(jsonLogArr,abiEvents)
     .map(x => {return {blockNumber: parseInt(x.blockNumber), blockHash: x.blockHash, 
       transactionHash: x.transactionHash, logIndex: parseInt(x.log.logIndex), payload: x.args}})

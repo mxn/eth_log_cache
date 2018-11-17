@@ -71,7 +71,8 @@ describe('test suit', () => {
     });
 
     it('test request',   (done) => {
-        request(`http://localhost:${PORT}`, (e, res, body) => {
+        request(`http://localhost:${PORT}/api/ethevents/kovan/OptionFactory/OptionTokenCreated/events`, (e, res, body) => {
+            assert.equal(res.statusCode, 200)
             if (e) {
                 console.error("error", e)
                 assert.ok(false, e)
