@@ -36,7 +36,7 @@ describe('test suit', () => {
     });
 
     after(()=>{
-        httpServer.close(()=> console.log("close"));
+        httpServer.close(() => console.log("close"));
         return emulator.stop();
     });
     
@@ -72,13 +72,8 @@ describe('test suit', () => {
 
     it('test request',   (done) => {
         request(`http://localhost:${PORT}/api/ethevents/kovan/OptionFactory/OptionTokenCreated/events`, (e, res, body) => {
+            assert.ok(!e)
             assert.equal(res.statusCode, 200)
-            if (e) {
-                console.error("error", e)
-                assert.ok(false, e)
-                done()
-                return
-            } 
             console.log(body)
             done()
         })

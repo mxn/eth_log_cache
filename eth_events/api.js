@@ -63,8 +63,8 @@ const getParsedEthLog =  async (eventType) => {
   let abi = getOptionFactoryAbi()
   let abiEvents = abi.filter((el) => el.type === 'event' && el.name === eventType)
   let parsedLogEvents = eventLogParser.parseLog(jsonLogArr,abiEvents)
-    .map(x => {return {blockNumber: parseInt(x.blockNumber), blockHash: x.blockHash, 
-      transactionHash: x.transactionHash, logIndex: parseInt(x.log.logIndex), payload: x.args}})
+    .map(x => {return {metadata: {blockNumber: parseInt(x.blockNumber), blockHash: x.blockHash, 
+      transactionHash: x.transactionHash, logIndex: parseInt(x.log.logIndex)}, payload: x.args}})
   return parsedLogEvents
 }
 
