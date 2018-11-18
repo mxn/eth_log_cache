@@ -17,7 +17,7 @@ var emulator, httpServer
 const PORT = 9876
 describe('test suit', () => {
     process.env.GCLOUD_PROJECT = 'project-id'; // Set the datastore project Id globally
-    before(function () {
+    beforeAll(function () {
         httpServer = app.listen(PORT, (e, d) =>  {
             if (e) {
                 console.error("error",e);
@@ -35,7 +35,7 @@ describe('test suit', () => {
         emulator = new Emulator(options);
     });
 
-    after(()=>{
+    afterAll(()=>{
         httpServer.close(() => console.log("close"));
         return emulator.stop();
     });
