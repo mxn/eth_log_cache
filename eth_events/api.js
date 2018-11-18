@@ -54,6 +54,7 @@ const getEthLogJson =  async () => {
       }
     ],
   }, cb))
+  //console.log("response body from web3", res.body)
   return res.body
 }
 
