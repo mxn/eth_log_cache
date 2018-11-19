@@ -12,14 +12,19 @@ const networkConfig = {
   }
 }
 
+const getApiEndPoint = (network) => {
+  let res = `https://${network}.infura.io/${config.get('API_TOKEN')}`
+  console.log("API endpoint", res)
+  return res
+}
 
-var web3
+var _web3
 const getWeb3 = () => {
-   if (!web3) {
-    web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io/3NXHF2x3QMz0j8uyF5kc"))
+   if (!_web3) {
+    _web3 = new Web3(new Web3.providers.HttpProvider(getApiEndPoint('kovan')))
     console.log('use fallback HttpProvider')
   }
-  return web3
+  return _web3
 }
 
 const promisify = (inner) => {
@@ -53,12 +58,6 @@ const getJsonRequest = (network, contractName, eventType, fromBlock) => {
   var req = {jsonrpc : "2.0" ,id :11, method:"eth_getLogs"}
   req.params = [{topics: [eventHash], address: contractAddress, "fromBlock":  getWeb3()._extend.utils.toHex(fromBlock || 0) ,"toBlock":"latest"}]
   return JSON.stringify(req)
-}
-
-const getApiEndPoint = (network) => {
-  let res = `https://${network}.infura.io/${config.get('API_TOKEN')}`
-  console.log("API endpoint", res)
-  return res
 }
 
 const getEthLogJson =  async (network, contract, eventType, fromBlock) => {
