@@ -2,6 +2,7 @@ const Web3 = require('web3')
 const assert = require('assert')
 const request = require('request')
 const eventLogParser = require('ethereum-event-logs')
+const config = require('../config')
 
 const networkConfig = {
   kovan: {
@@ -54,9 +55,15 @@ const getJsonRequest = (network, contractName, eventType, fromBlock) => {
   return JSON.stringify(req)
 }
 
+const getApiEndPoint = (network) => {
+  let res = `https://${network}.infura.io/${config.get('API_TOKEN')}`
+  console.log("API endpoint", res)
+  return res
+}
+
 const getEthLogJson =  async (network, contract, eventType, fromBlock) => {
   let res = await promisify(cb => request({
-     url: 'https://kovan.infura.io/3NXHF2x3QMz0j8uyF5kc',
+     url: getApiEndPoint(network),
      method: 'POST',
      body: getJsonRequest(network, contract, eventType, fromBlock),
      headers: [

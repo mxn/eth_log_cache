@@ -17,6 +17,7 @@
 // variables, and files.
 const nconf = (module.exports = require('nconf'));
 const path = require('path');
+require('dotenv').config()
 
 nconf
   // 1. Command-line arguments
@@ -25,14 +26,15 @@ nconf
   .env([
     'GCLOUD_PROJECT',
     'NODE_ENV',
-    'PORT'
+    'PORT',
+    'API_TOKEN'
   ])
   // 3. Config file
   .file({file: path.join(__dirname, 'config.json')})
   // 4. Defaults
   .defaults({
     GCLOUD_PROJECT: 'erc20-options',
-    PORT: 8080,
+    PORT: 8080
   });
 
 // Check for required settings
