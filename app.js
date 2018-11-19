@@ -22,7 +22,7 @@ app.set('trust proxy', true);
 
 app.use('/api/ethevents', require('./eth_events/api'));
 
-// Redirect root to /books
+// Redirect root to /api/events
 app.get('/', (req, res) => {
   res.redirect('/api/ethevents');
 });

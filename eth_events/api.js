@@ -13,61 +13,27 @@
 
 'use strict';
 
-const {getOptionFactoryInstance, getOptionFactoryAbi, promisify} = require("./core")
+const {getParsedEthLog} = require("./web3-facade")
 const express = require('express')
-const request = require('request')
-const SolidityCoder = require("web3/lib/solidity/coder.js");
-const SolidityEvent = require("web3/lib/web3/event.js");
-const eventLogParser = require('ethereum-event-logs')
 const assert = require('assert')
-
-const testPayload = 
-'{"jsonrpc":"2.0","id":11,"method":"eth_getLogs","params":[{"topics":["0x3ec66ca66f5513d42ece39babf6ab6a9177e30527051b76a3b5dc98e36952471","0x000000000000000000000000d0a1e359811322d97991e03f863a0c30c2cf029c","0x000000000000000000000000c4375b7de8af5a38a93548eb8453a498222c4ff2"],"address":"0x7a2637f799e183e276cc077c300bbff6f78df075","fromBlock":"0x0","toBlock":"latest"}]}'
 
 function getModel() {
   return require('./model');
 }
 
 const router = express.Router();
-
+ 
 /**
  * Retrieve a page of events (up to ten at a time).
  */
-// ""/:network/:contract/:eventType/events?
+//
 router.get('/:network/:contract/:eventType/events', (req, res, next) => {
   assert.ok(req.params.contract === 'OptionFactory', "Only  OptionFactory is supported!")
   assert.ok(req.params.eventType == 'OptionTokenCreated')
-  console.log("req.params",req.params)
   var fromBlock = req.query.id || 0;
-  getParsedEthLog(req.params.eventType).then((d) => res.json(d))
+  getParsedEthLog(req.params.network, req.params.contract, req.params.eventType).then((d) => res.json(d))
 });
 
-const getEthLogJson =  async () => {
- let res = await promisify(cb => request({
-    url: 'https://kovan.infura.io/3NXHF2x3QMz0j8uyF5kc',
-    method: 'POST',
-    body: testPayload,
-    headers: [
-      {
-        name: 'content-type',
-        value: 'application/json'
-      }
-    ],
-  }, cb))
-  //console.log("response body from web3", res.body)
-  return res.body
-}
-
-const getParsedEthLog =  async (eventType) => {
-  let jsonResponse = JSON.parse(await getEthLogJson())
-  let jsonLogArr = jsonResponse.result
-  let abi = getOptionFactoryAbi()
-  let abiEvents = abi.filter((el) => el.type === 'event' && el.name === eventType)
-  let parsedLogEvents = eventLogParser.parseLog(jsonLogArr,abiEvents)
-    .map(x => {return {metadata: {blockNumber: parseInt(x.blockNumber), blockHash: x.blockHash, 
-      transactionHash: x.transactionHash, logIndex: parseInt(x.log.logIndex)}, payload: x.args}})
-  return parsedLogEvents
-}
 
 
 router.use((err, req, res, next) => {
