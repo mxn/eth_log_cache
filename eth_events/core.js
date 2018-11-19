@@ -12,8 +12,12 @@ const promisify = (inner) => {
 const sha3 = (toBeHashed) => {
   const hash = new Keccak(256);
   hash.update(toBeHashed)
-  return hash.digest("hex")
+  return '0x' + hash.digest("hex")
 }
 
+const makeKey = (network, blockNumber, transactionHash, logIndex)  => 
+  sha3([network, blockNumber, transactionHash, logIndex].join(":"))
 
-module.exports = {promisify, sha3}
+
+
+module.exports = {promisify, sha3, makeKey}

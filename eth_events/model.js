@@ -15,7 +15,7 @@
 
 const Datastore = require('@google-cloud/datastore');
 const config = require('../config');
-const {promisify, sha3} = require('./core')
+const {promisify, makeKey} = require('./core')
 
 // [START config]
 const ds = Datastore({
@@ -142,7 +142,7 @@ function store (network, eventType, eventEntry) {
   let payloadData = toDatastore(eventEntry.payload)
   let dataToStore = payloadData.concat(metaData)
   return promisify(cb => ds.save({
-    key: ds.key([eventType, sha3(`${network}:${keys.join(":")}`)]),
+    key: ds.key([eventType, makeKey(`${network}:${keys.join(":")}`)]),
     data: dataToStore
   }, cb))
 }

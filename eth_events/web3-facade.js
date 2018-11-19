@@ -15,15 +15,15 @@ const networkConfig = {
 
 const getApiEndPoint = (network) => {
   let res = `https://${network}.infura.io/${config.get('API_TOKEN')}`
-  console.log("API endpoint", res)
+  console.debug("API endpoint", res)
   return res
 }
 
 var _web3
-const getWeb3 = () => {
+const getWeb3 = (network) => {
    if (!_web3) {
-    _web3 = new Web3(new Web3.providers.HttpProvider(getApiEndPoint('kovan')))
-    console.log('use fallback HttpProvider')
+    _web3 = new Web3(new Web3.providers.HttpProvider(getApiEndPoint(network)))
+    console.debug('HttpProvider is creted')
   }
   return _web3
 }
@@ -57,7 +57,7 @@ const getJsonRequest = (network, contractName, eventType, fromBlock) => {
   assert.ok(contractAddress)
   let eventHash = getEventHash(contractName, eventType)
   var req = {jsonrpc : "2.0" ,id :11, method:"eth_getLogs"}
-  req.params = [{topics: [eventHash], address: contractAddress, "fromBlock":  getWeb3()._extend.utils.toHex(fromBlock || 0) ,"toBlock":"latest"}]
+  req.params = [{topics: [eventHash], address: contractAddress, "fromBlock":  getWeb3(network)._extend.utils.toHex(fromBlock || 0) ,"toBlock":"latest"}]
   return JSON.stringify(req)
 }
 
