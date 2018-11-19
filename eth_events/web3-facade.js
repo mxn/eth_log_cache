@@ -3,6 +3,7 @@ const assert = require('assert')
 const request = require('request')
 const eventLogParser = require('ethereum-event-logs')
 const config = require('../config')
+const {sha3} = require('./core') 
 
 const networkConfig = {
   kovan: {
@@ -48,7 +49,7 @@ const getContractAbi = contractName => {
 const getEventHash = (contractName, eventType) => { 
   let abiEvent = getContractAbi(contractName).find((el) => el.type === 'event' && el.name === eventType)
   let paramString = abiEvent.inputs.map(input => input.type).join(',')
-  return getWeb3().sha3(`${eventType}(${paramString})`)
+  return sha3(`${eventType}(${paramString})`)
 }
 
 const getJsonRequest = (network, contractName, eventType, fromBlock) => {
