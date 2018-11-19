@@ -15,12 +15,15 @@
 
 const Datastore = require('@google-cloud/datastore');
 const config = require('../config');
+const {promisify, sha3} = require('./core')
 
 // [START config]
 const ds = Datastore({
   projectId: config.get('GCLOUD_PROJECT'),
 });
-const kind = 'OptionTokenCreated';
+
+const blockNumberColName = "_meta_blockNumber"
+const networkColName = "_meta_ethNetwork"
 // [END config]
 
 // Translates from Datastore's entity format to
@@ -40,8 +43,12 @@ const kind = 'OptionTokenCreated';
 //     property: value
 //   }
 function fromDatastore(obj) {
-  obj.id = obj[Datastore.KEY].id;
-  return obj;
+  var res = {}
+  Object.keys(obj)
+    .filter(k => !k.startsWith('_meta_'))
+    .forEach(k => res[k] = obj[k])
+  res._id = obj[Datastore.KEY].name;
+  return res;
 }
 
 // Translates from the application's format to the datastore's
@@ -76,23 +83,23 @@ function toDatastore(obj, nonIndexed) {
     }
     results.push({
       name: k,
-      value: obj[k],
+      value: typeof obj[k] === 'string' ? obj[k].toLowerCase(): obj[k], //convert addresses and hashes to lowercase
       excludeFromIndexes: nonIndexed.indexOf(k) !== -1,
     });
   });
   return results;
 }
 
-// Lists all books in the Datastore sorted alphabetically by title.
 // The ``limit`` argument determines the maximum amount of results to
 // return per page. The ``token`` argument allows requesting additional
 // pages. The callback is invoked with ``(err, books, nextPageToken)``.
 // [START list]
-function list(limit, token, cb) {
+function list(network, eventType, limit, token, cb) {
   const q = ds
-    .createQuery([kind])
+    .createQuery([eventType])
+    .filter(networkColName, "=", network)
+    .order(blockNumberColName)
     .limit(limit)
-    //.order('title')
     .start(token);
 
   ds.runQuery(q, (err, entities, nextQuery) => {
@@ -107,64 +114,43 @@ function list(limit, token, cb) {
     cb(null, entities.map(fromDatastore), hasMore);
   });
 }
-// [END list]
 
-// Creates a new book or updates an existing book with new data. The provided
-// data is automatically translated into Datastore format. The book will be
-// queued for background processing.
-// [START update]
-function update(id, data, cb) {
-  let key;
-  if (id) {
-    key = ds.key([kind, parseInt(id, 10)]);
-  } else {
-    key = ds.key(kind);
-  }
+function lastSeenBlockNumber(network, eventType, cb) {
+  const q = ds
+    .createQuery([eventType])
+    .filter(networkColName, "=", network)
+    .order(blockNumberColName, {descending: true})
+    .limit(1)
 
-  const entity = {
-    key: key,
-    data: toDatastore(data, ['description']),
-  };
-
-  ds.save(entity, err => {
-    data.id = entity.key.id;
-    cb(err, err ? null : data);
-  });
-}
-// [END update]
-
-function create(data, cb) {
-  update(null, data, cb);
-}
-
-function read(id, cb) {
-  const key = ds.key([kind, parseInt(id, 10)]);
-  ds.get(key, (err, entity) => {
-    if (!err && !entity) {
-      err = {
-        code: 404,
-        message: 'Not found',
-      };
-    }
+  ds.runQuery(q, (err, entities) => {
     if (err) {
       cb(err);
       return;
     }
-    cb(null, fromDatastore(entity));
+    cb(null, entities[0][blockNumberColName]);
   });
 }
+// [END list]
 
-function _delete(id, cb) {
-  const key = ds.key([kind, parseInt(id, 10)]);
-  ds.delete(key, cb);
+function store (network, eventType, eventEntry) {
+  let keys = ["blockNumber", "transactionHash", "logIndex"].map(metaProp => eventEntry.metadata[metaProp])
+  keys.splice(0, 0, eventType)
+  let metaDataObj = {}
+  Object.keys(eventEntry.metadata).forEach(k => metaDataObj[`_meta_${k}`] = eventEntry.metadata[k])
+  metaDataObj[networkColName] = network
+  let metaData = toDatastore(metaDataObj)
+  let payloadData = toDatastore(eventEntry.payload)
+  let dataToStore = payloadData.concat(metaData)
+  return promisify(cb => ds.save({
+    key: ds.key([eventType, sha3(`${network}:${keys.join(":")}`)]),
+    data: dataToStore
+  }, cb))
 }
 
 // [START exports]
 module.exports = {
-  create,
-  read,
-  update,
-  delete: _delete,
+  store,
   list,
+  lastSeenBlockNumber
 };
 // [END exports]

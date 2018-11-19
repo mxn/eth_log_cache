@@ -25,7 +25,7 @@ nconf
   .env([
     'GCLOUD_PROJECT',
     'NODE_ENV',
-    'PORT',
+    'PORT'
   ])
   // 3. Config file
   .file({file: path.join(__dirname, 'config.json')})

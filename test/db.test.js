@@ -68,19 +68,41 @@ describe('test suit', () => {
         })
     })
 
-    it('request should be properly encoded', () => {
+    it('request should be properly encoded', (done) => {
         let res = getJsonRequest('kovan', 'OptionFactory', 'OptionTokenCreated', 8)
         expect(JSON.parse(res).params.length).toBeGreaterThan(0)
+        done()
     })
 
-    it('test db case',   (done) => {
+    it('test db case',  async (done) => {
         /* model.create({myId: "long_id", block_number: "ggghggh", basis: "address_string"}, (e, d) => {
             console.log(d)
             assert.equal(d.block_number, "ggghggh")
             done()
         })  */
+        /*done()
+        return */
+        let entries = require('./data/converted_logs.json')
+        let d = await model.store("kovan", "OptionTokenCreated", entries[0])
         done()
-    });
+    })
+
+    it('list should return something', async (done) => {
+        model.list('kovan','OptionTokenCreated', 100, null, (e, d, hasNext) => {
+            expect(e).toBeNull()
+            console.log(d)
+            done()
+        })
+    })
+
+    it('should get lastBlockNumber',  (done) => {
+        model.lastSeenBlockNumber('kovan','OptionTokenCreated', (e, d) => {
+            expect(e).toBeNull()
+            expect(d).toBeGreaterThan(0)
+            console.log("blockNumber", d)
+            done()
+        })
+    })
 
 })
  

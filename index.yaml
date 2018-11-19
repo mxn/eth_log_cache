@@ -1,0 +1,11 @@
+indexes:
+- kind: OptionTokenCreated
+  properties:
+  - name: _meta_ethNetwork
+  - name: _meta_blockNumber
+    direction: desc
+- kind: OptionTokenCreated
+  properties:
+  - name: _meta_ethNetwork
+  - name: _meta_blockNumber
+    direction: asc
