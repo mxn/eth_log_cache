@@ -19,5 +19,4 @@ const makeKey = (network, blockNumber, transactionHash, logIndex)  =>
   sha3([network, blockNumber, transactionHash, logIndex].join(":"))
 
 
-
 module.exports = {promisify, sha3, makeKey}

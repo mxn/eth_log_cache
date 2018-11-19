@@ -133,8 +133,6 @@ function lastSeenBlockNumber(network, eventType, cb) {
 // [END list]
 
 function store (network, eventType, eventEntry) {
-  let keys = ["blockNumber", "transactionHash", "logIndex"].map(metaProp => eventEntry.metadata[metaProp])
-  keys.splice(0, 0, eventType)
   let metaDataObj = {}
   Object.keys(eventEntry.metadata).forEach(k => metaDataObj[`_meta_${k}`] = eventEntry.metadata[k])
   metaDataObj[networkColName] = network
@@ -142,7 +140,8 @@ function store (network, eventType, eventEntry) {
   let payloadData = toDatastore(eventEntry.payload)
   let dataToStore = payloadData.concat(metaData)
   return promisify(cb => ds.save({
-    key: ds.key([eventType, makeKey(`${network}:${keys.join(":")}`)]),
+    key: ds.key([eventType, makeKey(network, 
+        eventEntry.metadata.blockNumber, eventEntry.metadata.transactionHash, eventEntry.metadata.logIndex)]),
     data: dataToStore
   }, cb))
 }
