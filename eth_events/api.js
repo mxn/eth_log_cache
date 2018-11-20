@@ -35,25 +35,27 @@ router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
       fromBlock = lastBlockSeen
     }
     console.log("FromBlock: ", fromBlock)
-    getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, fromBlock)
-      .then((d) => res.json(d.map(x => x.payload)
-      ))
+    Promise.all([
+      getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, fromBlock),
+      promisify(cb => model.list(req.params.network, req.params.eventType, null, fromBlock, cb))])
+        .then(twoArrs => mergeLogEntries(network, twoArrs[0], twoArrs[1]))  
+        .then(d => res.json(d.map(x => x.payload)))
   })
 
-  const makeKey = (network, logEntry) => {
+  const makeKeyLogEntry = (network, logEntry) => {
     let args = ["blockNumber", "transactionHash", "logIndex"].map(prop => logEntry.metadata[prop])
     args.slice(network, 0, 0, args)
     return makeKey.apply(null, args)
   } 
 
-  const merge = (network, arr1, arr2) => {
+  const mergeLogEntries = (network, arr1, arr2) => {
     var aSet = {}
     let addToSet = element => {
-      aSet[makeKey(network, element)] = element
+      aSet[makeKeyLogEntry(network, element)] = element
     }
     arr1.forEach(addToSet)
     arr2.forEach(addToSet)
-    Object.keys(aSet).map(k => aSet[k]) 
+    return Object.keys(aSet).map(k => aSet[k]) 
   } 
   /* if (req.params.fromBlock) {
     getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, req.params.fromBlock)
