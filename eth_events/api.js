@@ -30,7 +30,7 @@ router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
   assert.ok(req.params.contract === 'OptionFactory', "Only  OptionFactory is supported!")
   assert.ok(req.params.eventType == 'OptionTokenCreated')
   model.lastSeenBlockNumber(req.params.network, req.params.eventType , (e, lastBlockSeen) => {
-    var fromBlock = req.query.fromBlock || 0
+    var fromBlock = parseInt(req.query.fromBlock) || 0
     console.debug("fromBlock: ", fromBlock)
     Promise.all([
       getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, lastBlockSeen),
@@ -57,14 +57,6 @@ router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
     arr2.forEach(addToSet)
     return Object.keys(aSet).map(k => aSet[k]) 
   } 
-  /* if (req.params.fromBlock) {
-    getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, req.params.fromBlock)
-      .then((d) => res.json(d.map(x => x.payload)))
-  } else {
-    getModel().lastSeenBlockNumber(network, eventType, lastBlock => {
-      getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, lastBlock).then((d) => res.json(d))
-    })
-  } */
 });
 
 
