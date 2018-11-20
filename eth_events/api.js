@@ -30,7 +30,10 @@ router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
   assert.ok(req.params.contract === 'OptionFactory', "Only  OptionFactory is supported!")
   assert.ok(req.params.eventType == 'OptionTokenCreated')
   model.lastSeenBlockNumber(req.params.network, req.params.eventType , (e, lastBlockSeen) => {
-    let fromBlock = lastBlockSeen || 0
+    var fromBlock = req.params.fromBlock || 0
+    if (lastBlockSeen > fromBlock) {
+      fromBlock = lastBlockSeen
+    }
     console.log("FromBlock: ", fromBlock)
     getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, fromBlock)
       .then((d) => res.json(d.map(x => x.payload)
