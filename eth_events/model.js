@@ -103,7 +103,7 @@ function list(network, eventType, limit, fromBlock, token, cb) {
     .filter(networkColName, "=", network)
     .filter(blockNumberColName, ">=", fromBlock)
     .order(blockNumberColName)
-    .limit(limit)
+    .limit(limit ? limit : 10000)
     .start(token);
 
   ds.runQuery(q, (err, entities, nextQuery) => {

@@ -31,14 +31,14 @@ router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
   assert.ok(req.params.eventType == 'OptionTokenCreated')
   model.lastSeenBlockNumber(req.params.network, req.params.eventType , (e, lastBlockSeen) => {
     var fromBlock = req.params.fromBlock || 0
-    if (lastBlockSeen > fromBlock) {
-      fromBlock = lastBlockSeen
-    }
-    console.log("FromBlock: ", fromBlock)
+    console.debug("fromBlock: ", fromBlock)
     Promise.all([
-      getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, fromBlock),
-      promisify(cb => model.list(req.params.network, req.params.eventType, null, fromBlock, cb))])
-        .then(twoArrs => mergeLogEntries(network, twoArrs[0], twoArrs[1]))  
+      getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, lastBlockSeen),
+      promisify(cb => model.list(req.params.network, req.params.eventType, null, fromBlock, null, cb))])
+        .then(twoArrs => {
+          console.debug(`web3 length: ${twoArrs[0].length}; db list length: ${twoArrs[1].length}`)
+          return mergeLogEntries(req.params.network, twoArrs[0], twoArrs[1])
+          })
         .then(d => res.json(d.map(x => x.payload)))
   })
 

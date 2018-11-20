@@ -6,10 +6,6 @@ const {getJsonRequest} = require('../eth_events/web3-facade.js')
 const app = require('../app.js')
 
 
-/* const options = {
-    legacy: false, // if you need legacy support
-    useDocker: false // if you need docker image
-}; */
 var httpServer
 const PORT = 9876
 describe('test suit', () => {
@@ -23,31 +19,23 @@ describe('test suit', () => {
             }
         })
       
-        const options = {
-            dataDir: "/tmp/datastore-emulator",
-            clean: true,
-            legacy: false, // if you need legacy support
-            useDocker: false // if you need docker image
-        };
     });
     beforeEach(() => {
         jest.resetModules();
       });
 
     afterAll(()=>{
-        httpServer.close(() => console.log("close"));
+        httpServer.close(() => console.log("Server is closed"));
     });
       
    
-    it('test request without mock',   (done) => {
-        
+    it('test request without mock',   (done) => {   
         const request = require('request')
-
         request(`http://localhost:${PORT}/api/ethevents/kovan/OptionFactory/OptionTokenCreated/events`, (e, res, body) => {
             expect(e).toBeNull()
             expect(res.statusCode).toBe(200)
             expect(JSON.parse(res.body).length).toBeGreaterThan(0)
-            console.log(res.body)
+            expect(JSON.parse(res.body).length).toBe(3)      
             done()
         })
     }, 10000)
@@ -72,27 +60,22 @@ describe('test suit', () => {
     it('request should be properly encoded', (done) => {
         let res = getJsonRequest('kovan', 'OptionFactory', 'OptionTokenCreated', 8)
         expect(JSON.parse(res).params.length).toBeGreaterThan(0)
-        console.log(JSON.parse(res).params.fromBlock === 8)
+        expect(JSON.parse(res).params.fromBlock === 8)
         done()
     })
 
     it('test db case',  async (done) => {
-        /* model.create({myId: "long_id", block_number: "ggghggh", basis: "address_string"}, (e, d) => {
-            console.log(d)
-            assert.equal(d.block_number, "ggghggh")
-            done()
-        })  */
-        /*done()
-        return */
         let entries = require('./data/converted_logs.json')
         let d = await model.store("kovan", "OptionTokenCreated", entries[0])
+        expect(d).toBeDefined()
         done()
     })
 
     it('list should return something', async (done) => {
         model.list('kovan','OptionTokenCreated', 100, 0, null, (e, d, hasNext) => {
             expect(e).toBeNull()
-            console.log(d)
+            expect(d).toBeDefined()
+            expect(d.length).toBeGreaterThan(0)
             done()
         })
     })
