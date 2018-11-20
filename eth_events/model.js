@@ -22,8 +22,9 @@ const ds = Datastore({
   projectId: config.get('GCLOUD_PROJECT'),
 });
 
-const blockNumberColName = "_meta_blockNumber"
-const networkColName = "_meta_ethNetwork"
+const metaColumnPrefix = "_meta_"
+const blockNumberColName = `${metaColumnPrefix}blockNumber`
+const networkColName = `${metaColumnPrefix}ethNetwork`
 // [END config]
 
 // Translates from Datastore's entity format to
@@ -44,9 +45,11 @@ const networkColName = "_meta_ethNetwork"
 //   }
 function fromDatastore(obj) {
   var res = {}
+  res.payload = {}
+  res.metadata = {}
   Object.keys(obj)
-    .filter(k => !k.startsWith('_meta_'))
-    .forEach(k => res[k] = obj[k])
+    //.filter(k => !k.startsWith(metaColumnPrefix))
+    .forEach(k => k.startsWith(metaColumnPrefix) ? res.metadata[k.substring(metaColumnPrefix.length)] = obj[k] : res.payload[k] = obj[k])
   res._id = obj[Datastore.KEY].name;
   return res;
 }
@@ -98,6 +101,7 @@ function list(network, eventType, limit, fromBlock, token, cb) {
   const q = ds
     .createQuery([eventType])
     .filter(networkColName, "=", network)
+    .filter(blockNumberColName, ">=", fromBlock)
     .order(blockNumberColName)
     .limit(limit)
     .start(token);

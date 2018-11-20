@@ -16,7 +16,7 @@
 const {getParsedEthLog} = require("./web3-facade")
 const express = require('express')
 const assert = require('assert')
-const {promisify} = require('./core')
+const {promisify, makeKey} = require('./core')
 const model =  require('./model');
 
 
@@ -40,7 +40,21 @@ router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
       ))
   })
 
-  
+  const makeKey = (network, logEntry) => {
+    let args = ["blockNumber", "transactionHash", "logIndex"].map(prop => logEntry.metadata[prop])
+    args.slice(network, 0, 0, args)
+    return makeKey.apply(null, args)
+  } 
+
+  const merge = (network, arr1, arr2) => {
+    var aSet = {}
+    let addToSet = element => {
+      aSet[makeKey(network, element)] = element
+    }
+    arr1.forEach(addToSet)
+    arr2.forEach(addToSet)
+    Object.keys(aSet).map(k => aSet[k]) 
+  } 
   /* if (req.params.fromBlock) {
     getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, req.params.fromBlock)
       .then((d) => res.json(d.map(x => x.payload)))
