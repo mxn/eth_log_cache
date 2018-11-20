@@ -17,10 +17,8 @@ const {getParsedEthLog} = require("./web3-facade")
 const express = require('express')
 const assert = require('assert')
 const {promisify} = require('./core')
+const model =  require('./model');
 
-function getModel() {
-  return require('./model');
-}
 
 const router = express.Router();
  
@@ -31,8 +29,15 @@ const router = express.Router();
 router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
   assert.ok(req.params.contract === 'OptionFactory', "Only  OptionFactory is supported!")
   assert.ok(req.params.eventType == 'OptionTokenCreated')
-  getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, req.params.fromBlock)
-      .then((d) => res.json(d.map(x => x.payload)))
+  model.lastSeenBlockNumber(req.params.network, req.params.eventType , (e, lastBlockSeen) => {
+    let fromBlock = lastBlockSeen || 0
+    console.log("FromBlock: ", fromBlock)
+    getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, fromBlock)
+      .then((d) => res.json(d.map(x => x.payload)
+      ))
+  })
+
+  
   /* if (req.params.fromBlock) {
     getParsedEthLog(req.params.network, req.params.contract, req.params.eventType, req.params.fromBlock)
       .then((d) => res.json(d.map(x => x.payload)))

@@ -47,9 +47,10 @@ describe('test suit', () => {
             expect(e).toBeNull()
             expect(res.statusCode).toBe(200)
             expect(JSON.parse(res.body).length).toBeGreaterThan(0)
+            console.log(res.body)
             done()
         })
-    })
+    }, 10000)
 
     it('test request',   (done) => {
         const mockResponseBody = require('./data/web3ethLogsResponseBody.json')
@@ -71,6 +72,7 @@ describe('test suit', () => {
     it('request should be properly encoded', (done) => {
         let res = getJsonRequest('kovan', 'OptionFactory', 'OptionTokenCreated', 8)
         expect(JSON.parse(res).params.length).toBeGreaterThan(0)
+        console.log(JSON.parse(res).params.fromBlock === 8)
         done()
     })
 
@@ -88,7 +90,7 @@ describe('test suit', () => {
     })
 
     it('list should return something', async (done) => {
-        model.list('kovan','OptionTokenCreated', 100, null, (e, d, hasNext) => {
+        model.list('kovan','OptionTokenCreated', 100, 0, null, (e, d, hasNext) => {
             expect(e).toBeNull()
             console.log(d)
             done()

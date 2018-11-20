@@ -94,7 +94,7 @@ function toDatastore(obj, nonIndexed) {
 // return per page. The ``token`` argument allows requesting additional
 // pages. The callback is invoked with ``(err, books, nextPageToken)``.
 // [START list]
-function list(network, eventType, limit, token, cb) {
+function list(network, eventType, limit, fromBlock, token, cb) {
   const q = ds
     .createQuery([eventType])
     .filter(networkColName, "=", network)
