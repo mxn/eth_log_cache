@@ -24,7 +24,6 @@ app.use('/api/ethevents', require('./eth_events/api'));
 
 // Redirect root to /api/events
 app.get('/', (req, res) => {
-  res.append('Access-Control-Allow-Origin', ['*']);
   res.redirect('/api/ethevents');
 });
 

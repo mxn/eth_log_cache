@@ -27,6 +27,7 @@ const router = express.Router();
  */
 //
 router.get('/:network/:contract/:eventType/events',  (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
   assert.ok(req.params.contract === 'OptionFactory', "Only  OptionFactory is supported!")
   assert.ok(req.params.eventType == 'OptionTokenCreated')
   model.lastSeenBlockNumber(req.params.network, req.params.eventType , (e, lastBlockSeen) => {
