@@ -14,7 +14,7 @@ const networkConfig = {
 }
 
 const getApiEndPoint = (network) => {
-  let res = `https://${network}.infura.io/${config.get('API_TOKEN')}`
+  let res = `https://${network}.infura.io/v3/${config.get('API_TOKEN')}`
   console.debug("API endpoint", res)
   return res
 }
